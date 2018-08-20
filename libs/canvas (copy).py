@@ -160,9 +160,13 @@ class Canvas(QWidget):
                 if self.hVertex != 4:
                     self.boundedMoveVertex(pos)
                 else:
-                    self.rotationVertext(pos, radius ,0)
+                    # print("self.shapes[-1])kkkkkkkkkkkkkkkkkkkk", self.shapes[-1])
+                    # rotate from center
+                    self.rotationVertext(0, pos, radius)
                     # self.rotationVertext(1, pos, radius)
-                    # print("--------------------rotation from center---------------", pos)
+                    # self.rotationVertext(2, pos, radius)
+                    # self.rotationVertext(3, pos, radius)
+                    print("--------------------rotation from center---------------", pos)
                 self.shapeMoved.emit()
                 self.repaint()
 
@@ -171,7 +175,7 @@ class Canvas(QWidget):
                 self.boundedMoveShape(self.selectedShape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
-                # print("--------------------press and move rectangle---------------")
+                print("--------------------press and move rectangle---------------")
             return
         self.setToolTip("Image")
 
@@ -200,7 +204,7 @@ class Canvas(QWidget):
                     self.setToolTip("Click & drag to rotated")
                 self.setStatusTip(self.toolTip())
                 self.update()
-                # print("move a vertext of shape************** self.hVertex: ",self.hVertex)
+                print("move a vertext of shape************** self.hVertex: ",self.hVertex)
 
                 break
             elif shape.containsPoint(pos):
@@ -226,14 +230,17 @@ class Canvas(QWidget):
         if ev.button() == Qt.LeftButton:
             if self.drawing():
                 self.handleDrawing(pos)
+                print("-----only click left in rectangle-----")
             else:
                 self.selectShapePoint(pos)
                 self.prevPoint = pos
                 self.repaint()
+                # print("-----click left mouse to change place-----")
         elif ev.button() == Qt.RightButton and self.editing():
             self.selectShapePoint(pos)
             self.prevPoint = pos
             self.repaint()
+            # print("--------------click right--------------")
 
     def mouseReleaseEvent(self, ev):
         if ev.button() == Qt.RightButton:
@@ -342,7 +349,6 @@ class Canvas(QWidget):
         y2 = (rect.y() + rect.height()) - point.y()
         self.offsets = QPointF(x1, y1), QPointF(x2, y2)
 
-
     def boundedMoveVertex(self, pos):
         index, shape = self.hVertex, self.hShape
         point = shape[index]
@@ -367,134 +373,40 @@ class Canvas(QWidget):
         shape.moveVertexBy(rindex, rshift)
         shape.moveVertexBy(lindex, lshift)
 
-    def rotationVertext(self, pos, radius, i=None):
+    def rotationVertext(self, pos, radius, i):
+        # tmp = self.points[0:4]
+        # vector = []
+        # dist = []
+        # for index, vertext in enumerate(self.points[0:4]):
+        #     # self.points[index] = pos-vertext
+        #     vector.append(pos - vertext)
+        #     dist.append((vector[index].x() ** 2 + vector[index].y() ** 2) ** 0.5)
+
         shape = self.hShape
-        pts = []
-        for i in shape[0:4]:
-            pts.append([int(i.x()), int(i.y()) ])
-
-        cnt = [shape[-1].x(), shape[-1].y()]
-        pts = np.asarray(pts)
-        cnt = np.asarray(cnt)
-
-
         center = shape[-1]
         vector = pos - center
         dist = (vector.x() ** 2 + vector.y() ** 2) ** 0.5
-        vector1 = center - shape[0]
-        tmp = QPointF()
+        # follows mouse around
+        i = 0
         if dist > 0:
             scalar = radius/dist
-            tmp.setX(int(round(center.x() + vector.x() * scalar)))
-            tmp.setY(int(round(center.y() + vector.y() * scalar)))
-        vector2 = center - tmp
+            shape[i].setX(int(round(center.x() + vector.x() * scalar)))
+            shape[i].setY(int(round(center.y() + vector.y() * scalar)))
 
-        try:
-            tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
-            mau = ((vector1.x()**2 + vector1.y()**2))**0.5 * ((vector2.x()**2 + vector2.y()**2))**0.5
-            cos = tu / mau
-            ang = np.arccos(cos)
-        except:
-            return -1
-        xxx = np.dot(pts - cnt, np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])) + cnt
-        for i, value in enumerate(xxx):
-            shape[i].setX(int(value[0]))
-            shape[i].setY(int(value[1]))
-        print("before saving: ")
-        for i in shape:
-            print( '     (',i.x(), ',', i.y(),')' )
+
+        
+        center = shape[-1]
+        arage = (shape[0] + shape[1])/2
+        vector1 = center - arage
+        vector2 = center - pos
+        tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
+        mau = ( (vector1.x()**2 + vector1.y()**2) * (vector2.x()**2 + vector2.y()**2) )**0.5
+        # return np.degrees(np.arccos(tu/mau))
 
 
 
 
-
-    # def rotationVertext(self, pos, radius, i):
-    #     import copy
-    #     # tmp = self.points[0:4]
-    #     # vector = []
-    #     # dist = []
-    #     # for index, vertext in enumerate(self.points[0:4]):
-    #     #     # self.points[index] = pos-vertext
-    #     #     vector.append(pos - vertext)
-    #     #     dist.append((vector[index].x() ** 2 + vector[index].y() ** 2) ** 0.5)
-    #     shape = self.hShape
-    #     center = shape[-1]
-    #     vector = pos - center
-    #     dist = (vector.x() ** 2 + vector.y() ** 2) ** 0.5
-    #     # follows mouse around
-    #     # i = 0
-    #     vector1 = center - shape[0]
-    #     tmp = QPointF()
-    #     if dist > 0:
-    #         scalar = radius/dist
-    #         tmp.setX(int(round(center.x() + vector.x() * scalar)))
-    #         tmp.setY(int(round(center.y() + vector.y() * scalar)))
-    #     vector2 = center - tmp
-    #
-    #     try:
-    #         tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
-    #         mau = ((vector1.x()**2 + vector1.y()**2))**0.5 * ((vector2.x()**2 + vector2.y()**2))**0.5
-    #
-    #         # alpha = np.degrees(np.arccos(tu/mau))
-    #         cos = tu / mau
-    #         alpha = np.arccos(cos)
-    #     except:
-    #         return -1
-    #     if int(np.degrees(alpha)) % 5 != 0:
-    #         return -1
-    #     sin = np.sin(alpha)
-    #     tmp_ = []
-    #     for i in shape[0:4]:
-    #         x = copy.copy(i.x())
-    #         y = copy.copy(i.y())
-    #         tmp_.append([(int((x - center.x())*cos - (y - center.y())*sin + center.x())) , (int((y - center.y())*sin - (y - center.y())*cos + center.y())) ])
-    #
-    #
-    #
-    #
-    #
-    #     # center = shape[-1]
-    #     # arage = (shape[0] + shape[1])/2
-    #     # vector1 = center - arage
-    #     # vector2 = center - pos
-    #     # tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
-    #     # mau = ( (vector1.x()**2 + vector1.y()**2) * (vector2.x()**2 + vector2.y()**2) )**0.5
-    #     # return np.degrees(np.arccos(tu/mau))
-
-    def make_GraphicsItem_draggable(parent):
-        class DraggableGraphicsItem(parent):
-
-            def __init__(self, *args, **kwargs):
-                """
-                By default QGraphicsItems are not movable and also do not emit signals when the position is changed for
-                performance reasons. We need to turn this on.
-                """
-                parent.__init__(self, *args, **kwargs)
-                self.parent = parent
-                self.setFlags(
-                    QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsScenePositionChanges)
-                self.signaller = DraggableGraphicsItemSignaller()
-            def itemChange(self, change, value):
-                if change == QGraphicsItem.ItemPositionChange:
-                    self.signaller.positionChanged.emit(value)
-                return parent.itemChange(self, change, value)
-
-        return DraggableGraphicsItem
-    # def rotate_item(position, item):
-    #     '''
-    #
-    #     :param item:
-    #     :return:
-    #     '''
-    #     import math
-    #     item_position = item.transformOriginPoint()
-    #     angle = math.atan2(item_position.y() - position.y(),
-    #                        item_position.x() - position.x()) / math.pi * 180 - 45  # -45 because handle item is at upper left border, adjust to your needs
-    #     print(angle)
-    #     item.setRotation(angle)
-
-
-    def boundedMoveShape(self, shape, pos):# after press rectangle keep moving
+    def boundedMoveShape(self, shape, pos):
         if self.outOfPixmap(pos):
             return False  # No need to move
         o1 = pos + self.offsets[0]

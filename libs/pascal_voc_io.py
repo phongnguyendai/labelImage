@@ -80,8 +80,9 @@ class PascalVocWriter:
         bndbox['difficult'] = difficult
         self.boxlist.append(bndbox)
 
-    def addBndBox_2(self, xmin, ymin, xmax, ymax, name, difficult,kind):
-        bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
+
+    def addBndBox_2(self, xmin, ymin, xmax, ymax, xmid, ymid, name, difficult, kind):
+        bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax, 'xmid':xmid,'ymid':ymid }
         bndbox['name'] = name
         bndbox['difficult'] = difficult
         bndbox['kind'] = kind #kind = vertical or horizontal
@@ -119,6 +120,11 @@ class PascalVocWriter:
             xmax.text = str(each_object['xmax'])
             ymax = SubElement(bndbox, 'ymax')
             ymax.text = str(each_object['ymax'])
+            xmid = SubElement(bndbox, 'xmid')
+            xmid.text = str(each_object['xmid'])
+            ymid = SubElement(bndbox, 'ymid')
+            ymid.text = str(each_object['ymid'])
+
 
     def save(self, targetFile=None):
         root = self.genXML()
@@ -156,7 +162,9 @@ class PascalVocReader:
         ymin = int(bndbox.find('ymin').text)
         xmax = int(bndbox.find('xmax').text)
         ymax = int(bndbox.find('ymax').text)
-        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+        xmid = int(bndbox.find('xmid').text)
+        ymid = int(bndbox.find('ymid').text)
+        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmid, ymid)]
         self.shapes.append((label, points, None, None, difficult))
 
     def parseXML(self):

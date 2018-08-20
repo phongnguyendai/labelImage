@@ -5,6 +5,7 @@
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
+
 except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
@@ -39,7 +40,7 @@ class Shape(object):
     point_size = 8
     scale = 1.0
 
-    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False, kind="Horizontal"):
+    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False, kind="Horizontal", radius = 0):
         self.label = label
         self.points = []
         self.fill = False
@@ -47,6 +48,7 @@ class Shape(object):
         self.difficult = difficult
         self.paintLabel = paintLabel
         self.kind = kind
+        self.radius = radius
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -67,7 +69,7 @@ class Shape(object):
         self._closed = True
 
     def reachMaxPoints(self):
-        if len(self.points) >= 4:
+        if len(self.points) >= 5:
             return True
         return False
 
@@ -86,26 +88,61 @@ class Shape(object):
     def setOpen(self):
         self._closed = False
 
-    def paint(self, painter):
+    def rotationVertext(self, current_pos):
+        import numpy as np
+        shape = self.points
+        center = shape[-1]
+        arage = (shape[0] + shape[1])/2
+        vector1 = center - arage
+        vector2 = center - current_pos
+        tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
+        mau = ( (vector1.x()**2 + vector1.y()**2) * (vector2.x()**2 + vector2.y()**2) )**0.5
+        return np.degrees(np.arccos(tu/mau))
+
+    def paint(self, painter, current_pos = None):
+        if current_pos != None:
+            # painter.tra
+            angle = self.rotationVertext(current_pos)
+            painter.translate(self.points[-1].x(), self.points[-1].y())
+            painter.rotate(angle)
+            return
         if self.points:
             color = self.select_line_color if self.selected else self.line_color
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
             painter.setPen(pen)
-
             line_path = QPainterPath()
             vrtx_path = QPainterPath()
+
+            # print("\n\n--------------------------------------\n")
+            # print("len(point) = ", len(self.points))
+            # print(self.points)
+            # print("\n\n--------------------------------------\n")
 
             line_path.moveTo(self.points[0])
             # Uncommenting the following line will draw 2 paths
             # for the 1st vertex, and make it non-filled, which
             # may be desirable.
             #self.drawVertex(vrtx_path, 0)
-
-            for i, p in enumerate(self.points):
+            tmp = self.points[0:4]
+            # print(self.points)
+            # if len(self.points) == 5:
+            #     pain_point = QPainter()
+            #     pain_point.drawPoint(self.points[-1].x, )
+            for i, p in enumerate(tmp):
                 line_path.lineTo(p)
                 self.drawVertex(vrtx_path, i)
+                # print("draw rectangle")
+            # print("d = ", d)
+            vrtx_path.addEllipse(self.points[-1], 6.0, 6.0)
+
+            # if len(self.points) == 5:
+            #     pain_point = QPainter()
+            #     pain_point.addEllipse(self.points[-1], 10,10)
+
+            # draw center of rectangle
+            # painter.drawPoint(self.points[-1])
             if self.isClosed():
                 line_path.lineTo(self.points[0])
 
@@ -139,6 +176,8 @@ class Shape(object):
         d = self.point_size / self.scale
         shape = self.point_type
         point = self.points[i]
+        # print("len(self.points) draw rectangle: " , len(self.points))
+
         if i == self._highlightIndex:
             size, shape = self._highlightSettings[self._highlightMode]
             d *= size
@@ -147,11 +186,18 @@ class Shape(object):
         else:
             self.vertex_fill_color = Shape.vertex_fill_color
         if shape == self.P_SQUARE:
+            # print("------------------point-----------after draw rectangle-------", point,i)
+            # point___ = (self.points[-1].x(),  self.points[-1].y())
+
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
+            # path.addEllipse(point___)
+            # print(point___,"point___")
         elif shape == self.P_ROUND:
             path.addEllipse(point, d / 2.0, d / 2.0)
         else:
             assert False, "unsupported vertex shape"
+
+    # def drawPoint
 
     def nearestVertex(self, point, epsilon):
         for i, p in enumerate(self.points):
@@ -176,6 +222,13 @@ class Shape(object):
 
     def moveVertexBy(self, i, offset):
         self.points[i] = self.points[i] + offset
+        self.points[-1] = (self.points[0] + self.points[2]) / 2
+        # print(self.points[0],self.points[1],self.points[2],self.points[3],self.points[4])
+
+
+
+
+
 
     def highlightVertex(self, i, action):
         self._highlightIndex = i
@@ -196,6 +249,7 @@ class Shape(object):
             shape.fill_color = self.fill_color
         shape.difficult = self.difficult
         shape.kind = self.kind
+        shape.radius = self.radius
         return shape
 
     def __len__(self):
