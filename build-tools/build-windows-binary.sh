@@ -27,6 +27,7 @@ FOLDER=$(git describe --abbrev=0 --tags)
 FOLDER="windows_"$FOLDER
 rm -rf "$FOLDER"
 mkdir "$FOLDER"
+echo $FOLDER
 cp dist/labelImg.exe $FOLDER
 cp -rf ../data $FOLDER/data
 zip "$FOLDER.zip" -r $FOLDER

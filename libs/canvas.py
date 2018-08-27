@@ -394,15 +394,15 @@ class Canvas(QWidget):
             mau = ((vector1.x()**2 + vector1.y()**2))**0.5 * ((vector2.x()**2 + vector2.y()**2))**0.5
             cos = tu / mau
             ang = np.arccos(cos)
+
+
+            # xxx = np.dot(pts - cnt, np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])) + cnt
+            xxx = np.dot(   pts - cnt, np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])   ) + cnt
+            for i, value in enumerate(xxx):
+                shape[i].setX(round(value[0]))
+                shape[i].setY(round(value[1]))
         except:
             return -1
-        xxx = np.dot(pts - cnt, np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])) + cnt
-        for i, value in enumerate(xxx):
-            shape[i].setX(int(value[0]))
-            shape[i].setY(int(value[1]))
-        print("before saving: ")
-        for i in shape:
-            print( '     (',i.x(), ',', i.y(),')' )
 
 
 

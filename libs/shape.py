@@ -43,6 +43,7 @@ class Shape(object):
     def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False, kind="Horizontal", radius = 0):
         self.label = label
         self.points = []
+        self.pos_of_points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
@@ -73,6 +74,9 @@ class Shape(object):
             return True
         return False
 
+    def get_list_of_points(self):
+        return self.points
+
     def addPoint(self, point):
         if not self.reachMaxPoints():
             self.points.append(point)
@@ -88,17 +92,6 @@ class Shape(object):
     def setOpen(self):
         self._closed = False
 
-    def rotationVertext(self, current_pos):
-        import numpy as np
-        shape = self.points
-        center = shape[-1]
-        arage = (shape[0] + shape[1])/2
-        vector1 = center - arage
-        vector2 = center - current_pos
-        tu = vector1.x()*vector2.x() + vector1.y()*vector2.y()
-        mau = ( (vector1.x()**2 + vector1.y()**2) * (vector2.x()**2 + vector2.y()**2) )**0.5
-        return np.degrees(np.arccos(tu/mau))
-
     def paint(self, painter, current_pos = None):
         if current_pos != None:
             # painter.tra
@@ -107,6 +100,7 @@ class Shape(object):
             painter.rotate(angle)
             return
         if self.points:
+
             color = self.select_line_color if self.selected else self.line_color
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)

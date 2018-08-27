@@ -44,18 +44,18 @@ class LabelFile(object):
         writer = PascalVocWriter(imgFolderName, imgFileName,
                                  imageShape, localImgPath=imagePath)
         writer.verified = self.verified
-        print("\n\n\n******************************after press saving: **********************************")
+        # print("\n\n\n******************************after press saving: **********************************")
 
         for shape in shapes:
             points = shape['points']
-            print(points)
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
             kind = shape['kind']
             bndbox = LabelFile.convertPoints2BndBox(points)
             # writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
-            writer.addBndBox_2(bndbox[0], bndbox[1], bndbox[2], bndbox[3], bndbox[4], bndbox[5] , label, difficult, kind)
+            # print("points:xxxxxxxxxxxx ", points, "point[0] = ",points[0])
+            writer.addBndBox_2(bndbox[0], bndbox[1], bndbox[2], bndbox[3], bndbox[4], bndbox[5] ,points , label, difficult, kind)
 
         writer.save(targetFile=filename)
         return
@@ -127,6 +127,7 @@ class LabelFile(object):
 
     @staticmethod
     def convertPoints2BndBox(points):
+        # print("convertPoints2BndBox")
         xmin = float('inf')
         ymin = float('inf')
         xmax = float('-inf')

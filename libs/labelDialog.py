@@ -90,6 +90,7 @@ class LabelDialog(QDialog):
         return self.kind
 
     def popUp(self, text='', move=True):
+        print("text: ", text)
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)

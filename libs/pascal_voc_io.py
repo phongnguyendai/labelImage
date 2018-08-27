@@ -81,8 +81,12 @@ class PascalVocWriter:
         self.boxlist.append(bndbox)
 
 
-    def addBndBox_2(self, xmin, ymin, xmax, ymax, xmid, ymid, name, difficult, kind):
-        bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax, 'xmid':xmid,'ymid':ymid }
+    def addBndBox_2(self, xmin, ymin, xmax, ymax, xmid, ymid, list_points, name, difficult, kind): # list_point : 5 points
+        bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax, 'xmid':xmid,'ymid':ymid,
+                  'x0': list_points[0][0], 'y0': list_points[0][1],
+                  'x1': list_points[1][0], 'y1': list_points[1][1],
+                  'x2': list_points[2][0], 'y2': list_points[2][1],
+                  'x3': list_points[3][0], 'y3': list_points[3][1]}
         bndbox['name'] = name
         bndbox['difficult'] = difficult
         bndbox['kind'] = kind #kind = vertical or horizontal
@@ -112,10 +116,13 @@ class PascalVocWriter:
             kind.text = str(each_object["kind"])
 
             bndbox = SubElement(object_item, 'bndbox')
+
             xmin = SubElement(bndbox, 'xmin')
             xmin.text = str(each_object['xmin'])
             ymin = SubElement(bndbox, 'ymin')
             ymin.text = str(each_object['ymin'])
+
+
             xmax = SubElement(bndbox, 'xmax')
             xmax.text = str(each_object['xmax'])
             ymax = SubElement(bndbox, 'ymax')
@@ -124,6 +131,29 @@ class PascalVocWriter:
             xmid.text = str(each_object['xmid'])
             ymid = SubElement(bndbox, 'ymid')
             ymid.text = str(each_object['ymid'])
+
+            x0 = SubElement(bndbox, 'x0')
+            x0.text = str(each_object['x0'])
+            y0 = SubElement(bndbox, 'y0')
+            y0.text = str(each_object['y0'])
+
+            x1 = SubElement(bndbox, 'x1')
+            x1.text = str(each_object['x1'])
+            y1 = SubElement(bndbox, 'y1')
+            y1.text = str(each_object['y1'])
+
+            x2 =   SubElement(bndbox, 'x2')
+            x2.text = str(each_object['x2'])
+            y2 =   SubElement(bndbox, 'y2')
+            y2.text = str(each_object['y2'])
+
+            x3 =   SubElement(bndbox, 'x3')
+            x3.text = str(each_object['x3'])
+            y3 =   SubElement(bndbox, 'y3')
+            y3.text = str(each_object['y3'])
+
+
+
 
 
     def save(self, targetFile=None):
@@ -165,6 +195,31 @@ class PascalVocReader:
         xmid = int(bndbox.find('xmid').text)
         ymid = int(bndbox.find('ymid').text)
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmid, ymid)]
+        print(points)
+        self.shapes.append((label, points, None, None, difficult))
+
+    def addShape_2(self, label, bndbox, difficult):
+
+        xmin = int(bndbox.find('xmin').text)
+        ymin = int(bndbox.find('ymin').text)
+        xmax = int(bndbox.find('xmax').text)
+        ymax = int(bndbox.find('ymax').text)
+        xmid = int(float(bndbox.find('xmid').text))
+        ymid = int(float(bndbox.find('ymid').text))
+        x0 = int(float(bndbox.find('x0').text))
+        y0 = int(float(bndbox.find('y0').text))
+        x1 = int(float(bndbox.find('x1').text))
+        y1 = int(float(bndbox.find('y1').text))
+        x2 = int(float(bndbox.find('x2').text))
+        y2 = int(float(bndbox.find('y2').text))
+        x3 = int(float(bndbox.find('x3').text))
+        y3 = int(float(bndbox.find('y3').text))
+
+        # points1 = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmid, ymid)]
+        # print("points1: ", points1)
+        points = [(x0, y0), (x1, y1), (x2, y2), (x3, y3), (xmid, ymid)]
+        # print("points:", points)
+
         self.shapes.append((label, points, None, None, difficult))
 
     def parseXML(self):
@@ -186,5 +241,5 @@ class PascalVocReader:
             difficult = False
             if object_iter.find('difficult') is not None:
                 difficult = bool(int(object_iter.find('difficult').text))
-            self.addShape(label, bndbox, difficult)
+            self.addShape_2(label, bndbox, difficult)
         return True
